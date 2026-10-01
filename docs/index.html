@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vocabulary Size</title>
+<style>
+  body {
+    max-width: 760px;
+    margin: 24px auto;
+    padding: 0 16px;
+    font: 16px/1.5 Arial, sans-serif;
+  }
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: .4em .8em;
+  border: 1px solid #aaa;
+  text-align: left;
+}
+#words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+}
+#answers {
+  background: #ccc;
+}
+.word-preview {
+    margin-bottom: .5em;
+  font-family: serif;
+  font-size: 1.5em;
+}
+  section {
+    margin: 32px 0;
+  }
+
+  .inactive {
+    opacity: .5;
+  }
+  label {
+    display: block;
+    margin: 8px 0;
+    padding: .5em;
+  }
+  .current-selection {
+    text-align: center;
+  }
+  label:has(input[type="radio"]:checked) {
+    font-weight: bold;
+    background-color: #ddd;
+  }
+  .slider {
+    position: relative;
+    height: 6px;
+    margin: 18px 10px;
+    background: #aaa;
+  }
+
+  .slider input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    margin: 0;
+    appearance: none;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .slider input::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    appearance: none;
+    border: 1px solid #333;
+    border-radius: 50%;
+    background: white;
+    pointer-events: auto;
+  }
+
+.slider input {
+  direction: rtl;
+}
+  .slider input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #333;
+    border-radius: 50%;
+    background: white;
+    pointer-events: auto;
+  }
+
+  .ends{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .answers {
+    display: flex;
+    justify-content: space-around;
+    gap: 12px;
+  }
+.answers {
+  border: 1px solid;
+  height: 1em;
+  overflow: hidden;
+  background: #eee;
+}
+.answers button {
+  border-radius: 1em;
+  border-width: 0;
+  background: #eee;
+  line-height: 1em;
+  padding: 0 .5em
+}
+
+.answers button:hover {
+  background: #aaa;
+  cursor: pointer;
+}
+.answers button:active {
+  background: #888;
+  cursor: pointer;
+}
+ .answers button[aria-pressed="true"] {
+    font-weight: 200;
+    background: #5f5;
+ }
+ .answers button[aria-pressed="true"].button-dont {
+    font-weight: 200;
+    background: #f55;
+ }
+
+
+  .word {
+    text-align: center;
+    padding: .5em;
+    border: .1em solid #ccc;
+    flex-grow: 1;
+    background: white;
+  }
+
+  button {
+    font: inherit;
+  }
+
+  button[aria-pressed="true"] {
+    font-weight: bold;
+  }
+
+  #counts {
+    position: sticky;
+    top: 0;
+    padding: 8px 0;
+    background: white;
+  }
+
+  fieldset:disabled {
+    color: #666;
+  }
+</style>
+</head>
+<body>
+  <main>
+    <section id="step1" class="active">
+      <h2>1. Pick a dataset</h2>
+      <fieldset id="datasets">
+        <legend>Dataset</legend>
+    <label><input type="radio" name="dataset" value="brysbaert_small.csv" checked> 
+        <a href="https://sites.google.com/site/borisnew/pub/BrysbaertNew2009.pdf">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — small list</a>
+        <br/> (28,917 entries)
+    </label>
+    <label><input type="radio" name="dataset" value="brysbaert_large.csv"> 
+        <a href="https://sites.google.com/site/borisnew/pub/BrysbaertNew2009.pdf">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — large list</a>
+        <br/> (321,180 entries)
+    </label>
+    <label><input type="radio" name="dataset" value="temple_spoken_word.csv"> 
+        <a href="https://doi.org/10.31234/osf.io/cm5ne">Finley (2024), Templex Spoken English Word Frequency Dataset</a>
+        <br/> (110,168 entries)
+    </label>
+    <label><input type="radio" name="dataset" value="google_word_frequency.csv"> 
+        <a href="https://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html">Tatman (2017), English Word Frequency</a>
+        <br/> (333,333 entries)
+    </label>
+      </fieldset>
+      <p id="dataset-status"></p>
+      <button id="next1" disabled>Continue</button>
+    </section>
+
+    <section id="step2" class="inactive">
+      <h2>2. Generate a random sample</h2>
+      <fieldset id="sample-settings" disabled>
+        <legend>Range</legend>
+
+        <div class="slider">
+          <input id="low" aria-label="Lower percentile" type="range" min="0" max="100" value="4">
+          <input id="high" aria-label="Upper percentile" type="range" min="0" max="100" value="27">
+        </div>
+
+<div class="ends">
+  <span>100th percentile (most frequent)</span>
+  <span>0th percentile (rarest)</span>
+</div>
+<p>
+<div class='current-selection'><span id="range-label">4th–27th percentiles</span> (<span id="available"></span>)</div>
+</p>
+<label>Sample size (words) <input id="size" type="number" min="1" value="30"></label>
+        <button id="generate">Generate sample</button>
+      </fieldset>
+    </section>
+
+    <section id="step3" class="inactive">
+      <h2>3. Label the words</h2>
+      <div id="counts">Know: 0 · Don’t know: 0 · Unlabeled: 0</div>
+      <p> Here is a tool that may help you keep track of your responses: </p>
+      <fieldset id="answers" disabled>
+        <div id="words"></div>
+      </fieldset>
+
+
+      <h2>4. Record your results</h2>
+      <div id="results"></div>
+      <p>Remember to record your results for this sample before starting a new one!</p>
+      <p>(You will likely want to do some kind of weighted average or sum to predict the number of words you know)</p>
+    </section>
+  </main>
+  <script>
+const $ = id => document.getElementById(id);
+const storageKey = 'vocabulary-sampling-lab:v1';
+const radios = [...document.querySelectorAll('[name="dataset"]')];
+let state = JSON.parse(localStorage.getItem(storageKey) || '{"step":1,"sample":null}');
+let words = [];
+
+if (state.settings) {
+  radios.forEach(radio => {
+    radio.checked = radio.value === state.settings.dataset;
+  });
+  $('low').value = state.settings.low;
+  $('high').value = state.settings.high;
+  $('size').value = state.settings.size;
+}
+state.step ||= state.sample ? 3 : 1;
+state.sample?.rows.forEach(row => {
+  if (row.answer === 'unknown') row.answer = 'dont';
+});
+
+function dataset() {
+  return radios.find(radio => radio.checked).value;
+}
+
+function save() {
+  state.settings = {
+    dataset: dataset(),
+    low: $('low').value,
+    high: $('high').value,
+    size: $('size').value
+  };
+  localStorage.setItem(storageKey, JSON.stringify(state));
+}
+
+function resetTo(step) {
+  state.step = Math.min(state.step, step);
+
+  if (step < 3) {
+    state.sample = null;
+    renderWords();
+  }
+
+  save();
+  updateControls();
+}
+
+// function counts() {
+//   const rows = state.sample?.rows || [];
+//   const know = rows.filter(row => row.answer === 'know').length;
+//   const dontKnow = rows.filter(row => row.answer === 'dont').length;
+//   const unlabeled = rows.length - know - dontKnow;
+// $('counts').textContent =
+//   `Know: ${know} words · Don’t know: ${dontKnow} words · Unlabeled: ${unlabeled} words`;
+
+// $('results').textContent = state.sample
+//   ? `${state.sample.low}th–${state.sample.high}th percentiles; sample size: ${rows.length} words. ${$('counts').textContent}`
+//   : '';
+//   $('next3').disabled = state.step < 3 || unlabeled > 0;
+//   // $('download').disabled = state.step < 4 || unlabeled > 0;
+// }
+function counts() {
+  const rows = state.sample?.rows || [];
+  const know = rows.filter(row => row.answer === 'know').length;
+  const dontKnow = rows.filter(row => row.answer === 'dont').length;
+  const unlabeled = rows.length - know - dontKnow;
+
+  $('counts').textContent = [
+    'Know\tDon’t know\tUnlabeled',
+    `${know}\t${dontKnow}\t${unlabeled}`
+  ].join('\n');
+
+
+  $('results').innerHTML = state.sample ? `
+    <table>
+      <tr>
+        <th>Low percentile</th>
+        <th>High percentile</th>
+        <th>Sample size (words)</th>
+        <th>Know (words)</th>
+        <th>Don’t know (words)</th>
+        <th>Unlabeled (words)</th>
+      </tr>
+      <tr>
+        <td>${state.sample.low}</td>
+        <td>${state.sample.high}</td>
+        <td>${rows.length}</td>
+        <td>${know}</td>
+        <td>${dontKnow}</td>
+        <td>${unlabeled}</td>
+      </tr>
+    </table>
+  ` : '';
+
+}
+function updateControls() {
+  for (let step = 1; step <= 3; step++) {
+    const section = $(`step${step}`);
+    const active = state.step >= step;
+    section.classList.toggle('active', active);
+    section.classList.toggle('inactive', !active);
+  }
+
+  $('next1').disabled = words.length === 0;
+  $('sample-settings').disabled = state.step < 2 || words.length === 0;
+  $('answers').disabled = state.step < 3 || !state.sample;
+  const start = Math.floor(words.length * (100 - +$('high').value) / 100);
+  const end = Math.floor(words.length * (100 - +$('low').value) / 100);
+  const available = end - start;
+  $('size').max = available;
+  $('generate').disabled = state.step < 2 || !words.length || +$('size').value < 1 || +$('size').value > available;
+  $('available').textContent = `${available.toLocaleString()} words`;
+
+  counts();
+}
+
+async function loadDataset() {
+  words = [];
+  updateControls();
+
+  try {
+    const response = await fetch(`word_frequency_datasets/${dataset()}`);
+    const lines = (await response.text()).trim().split(/\r?\n/).slice(1);
+    words = lines.map(line => {
+      const comma = line.lastIndexOf(',');
+      return {
+        word: line.slice(0, comma).replace(/^"|"$/g, '').replaceAll('""', '"'),
+        frequency: Number(line.slice(comma + 1))
+      };
+    }).sort((a, b) => b.frequency - a.frequency);
+    $('dataset-status').textContent = '';
+    updateRange();
+  } catch {
+    $('dataset-status').textContent = 'Could not load dataset.';
+  }
+
+  updateControls();
+}
+
+function renderWords() {
+  const list = $('words');
+  list.replaceChildren();
+
+  for (const row of state.sample?.rows || []) {
+    const line = document.createElement('div');
+    line.className = 'word';
+    const word = document.createElement('div');
+    word.classList.toggle("word-preview")
+    word.textContent = row.word;
+    const choices = document.createElement('span');
+    choices.className = 'answers';
+
+    for (const [value, label] of [['know', 'Know'], ['dont', 'Don’t know']]) {
+      const button = document.createElement('button');
+      button.textContent = label;
+      button.className = `button-${value}`
+      button.setAttribute('aria-pressed', row.answer === value);
+      button.onclick = () => {
+        row.answer = row.answer === value ? null : value;
+        state.step = Math.min(state.step, 3);
+        save();
+        renderWords();
+        updateControls();
+      };
+      choices.append(button);
+    }
+
+    line.append(word, choices);
+    list.append(line);
+  }
+
+  counts();
+}
+
+function format_percentile(n){
+  console.log(n);
+  let num = `${n}`;
+  const last_digit = num.charAt(num.length-1);
+  let suffix = ['th', 'nd', 'rd'][
+    (last_digit == '2' ? 1 : 0) +
+    (last_digit == '3' ? 1 : 0)
+  ]
+  return `${num}${suffix} percentile`;
+}
+// function updateRange() {
+//   if (+$('low').value >= +$('high').value) {
+//     $('low').value = +$('high').value - 1;
+//   }
+//   $('range-label').textContent = `High: ${format_percentile($('high').value)}, Low: ${format_percentile($('low').value)}`;
+//   resetTo(2);
+// }
+
+function updateRange(reset = false) {
+  if (+$('low').value >= +$('high').value) {
+    $('low').value = +$('high').value - 1;
+  }
+
+  $('range-label').textContent =
+    `${$('low').value}th–${$('high').value}th percentiles`;
+
+  if (reset) resetTo(2);
+  else updateControls();
+}
+
+function generateSample() {
+  const low = +$('low').value;
+  const high = +$('high').value;
+  const size = +$('size').value;
+  const start = Math.floor(words.length * (100 - high) / 100);
+  const end = Math.floor(words.length * (100 - low) / 100);
+  const pool = Array.from({length: end - start}, (_, i) => start + i);
+
+  if (!size || size > pool.length) return;
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  state.sample = {
+    low,
+    high,
+    rows: pool.slice(0, size).map(i => ({word: words[i].word, rank: i + 1, answer: null}))
+  };
+  state.step = 3;
+  save();
+  updateControls();
+  renderWords();
+}
+
+function downloadResults() {
+  const rows = [
+    ['rank', 'word', 'response'],
+    ...state.sample.rows.map(row => [row.rank, row.word, row.answer === 'know' ? 'know' : "don't know"])
+  ];
+  const csv = rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\r\n');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+  link.download = 'results.csv';
+  link.click();
+}
+
+radios.forEach(radio => {
+  radio.onchange = () => {
+    resetTo(1);
+    loadDataset();
+  };
+});
+
+$('next1').onclick = () => {
+  state.step = 2;
+  save();
+  updateControls();
+};
+$('low').oninput = updateRange;
+$('high').oninput = () => {
+  if (+$('high').value <= +$('low').value) {
+    $('high').value = +$('low').value + 1;
+  }
+  updateRange();
+  resetTo(2);
+};
+$('size').oninput = () => {
+  resetTo(2);
+};
+$('generate').onclick = generateSample;
+// $('next3').onclick = () => {
+//   state.step = 4;
+//   save();
+//   updateControls();
+// };
+// $('download').onclick = downloadResults;
+
+renderWords();
+updateRange();
+loadDataset();
+</script>
+</body>
+</html>
