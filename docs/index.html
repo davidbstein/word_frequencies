@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vocabulary Size</title>
+  <title>Estimate Words Known</title>
 <style>
   body {
     max-width: 760px;
@@ -166,26 +166,42 @@ td {
 </head>
 <body>
   <main>
+    <section>
+      This is tool to help you figure out how many words you know. It will walk you through the first three steps.
+      <ul>
+      <li>
+        (1) Pick a wordlist
+      </li>(2)<ul><li>
+        (a) Pick a range (for example, the range from 100th percentile to 90th percentail contains the top 10% of the words in your selected wordlist, based on whatever ranking systems your selected paper adopted). 
+      </li><li>
+        (B) Choose how big a random sample you want from that range. 
+      </li></ul><li>
+        (3) Decide what it means to "know" a word and count how many words in the sample you know. 
+      </li><li>
+        (4) Use your sampled data to extrapolate an answer to the question "how many words do I know?"
+      </li></ul>
+    </section>
     <section id="step1" class="active">
-      <h2>1. Pick a dataset</h2>
+      <h2>1. Select a word list:</h2>
       <fieldset id="datasets">
         <legend>Dataset</legend>
     <label><input type="radio" name="dataset" value="brysbaert_small.csv" checked> 
-        <a href="https://sites.google.com/site/borisnew/pub/BrysbaertNew2009.pdf">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — small list</a>
+        <a href="https://doi.org/10.3758/BRM.41.4.977">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — small list</a>
         <br/> (28,917 entries)
     </label>
     <label><input type="radio" name="dataset" value="brysbaert_large.csv"> 
-        <a href="https://sites.google.com/site/borisnew/pub/BrysbaertNew2009.pdf">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — large list</a>
+        <a href="https://doi.org/10.3758/BRM.41.4.977">Brysbaert &amp; New (2009), Moving beyond Kucera and Francis — large list</a>
         <br/> (321,180 entries)
     </label>
     <label><input type="radio" name="dataset" value="temple_spoken_word.csv"> 
         <a href="https://doi.org/10.31234/osf.io/cm5ne">Finley (2024), Templex Spoken English Word Frequency Dataset</a>
         <br/> (110,168 entries)
     </label>
-    <label><input type="radio" name="dataset" value="google_word_frequency.csv"> 
-        <a href="https://commondatastorage.googleapis.com/books/syntactic-ngrams/index.html">Tatman (2017), English Word Frequency</a>
-        <br/> (333,333 entries)
-    </label>
+<label><input type="radio" name="dataset" value="google_word_frequency.csv"> 
+  <a href="https://www.kaggle.com/datasets/rtatman/english-word-frequency">
+    Tatman (2017), English Word Frequency</a> (derived from <a href="https://doi.org/10.3115/1220835.1220929">Brants &amp; Franz (2006), Web 1T 5-gram Version 1</a>)
+  <br/> (333,333 entries; derived from the Google Web Trillion Word Corpus)
+</label>
       </fieldset>
       <p id="dataset-status"></p>
       <button id="next1" disabled>Continue</button>
