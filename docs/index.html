@@ -310,10 +310,8 @@ function counts() {
   const dontKnow = rows.filter(row => row.answer === 'dont').length;
   const unlabeled = rows.length - know - dontKnow;
 
-  $('counts').textContent = [
-    'Know\tDon’t know\tUnlabeled',
-    `${know}\t${dontKnow}\t${unlabeled}`
-  ].join('\n');
+$('counts').textContent =
+  `Know: ${know} words · Don’t know: ${dontKnow} words · Unlabeled: ${unlabeled} words`;
 
 
   $('results').innerHTML = state.sample ? `
